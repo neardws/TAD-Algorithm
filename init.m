@@ -10,12 +10,193 @@ for i = 1 : m
     y = trace(4);
     if vehicleID ~= 0 && time ~= 0
         vehicleTime(vehicleID,time) = 1;
-        vehicleTrace(vehicleID*time,1) = x;
-        vehicleTrace(vehicleID*time,2) = y;
+        vehicleTrace((vehicleID-1)*300+time,1) = x;
+        vehicleTrace((vehicleID-1)*300+time,2) = y;
     end
 end
 
+mobileFogID = randi([1,110],10,1);
+
+nowTime = 1;
+MF = []; % Mobile Fog
+V = []; % Vehicles
+for i = 1 : nowTime
+    inMapID = vehicleTime(:,i);
+    for j = 1 : vehicleID
+        if inMapID(j) == 1
+            % j is a mobile Fog
+            if ismember(j,mobileFogID) 
+                MF = [MF,j];
+            % j is a client vehicle
+            else
+                V = [V,j];
+            end
+        end  
+    end
+end
+
+vehicleNum = numel(V);
+vehicleTask = randi([1,5],vehicleNum,1);
+taskNum = sum(vehicleTask(:));
+taskVehicle = zeros(taskNum,vehicleNum);
+taskSize = randi([10,25],taskNum,1);
+taskCpu = randi([10,25],taskNum,1);
+
+fixedFogNum = 4;
+mobileFogNum = numel(MF);
+fogNum = fixedFogNum + mobileFogNum;
+fixedFogSize = randi([80,150],fixedFogNum,1);
+mobileFogSize = randi([50,100],mobileFogNum,1);
+fixedFogCompu = randi([50,100],fixedFogNum,1);
+mobileFogCompu = randi([10,50],mobileFogNum,1);
+fixedFogTrans = randi([20,40],fixedFogNum,1);
+mobileFogTrans = randi([10,20],mobileFogNum,1);
+
+taskFog = zeros(taskNum,mobileFogNum+fixedFogNum);
+fixedFogLocal = [500 500; 500 1000; 1000 500; 1000 1000];
+
+for i = 1 : taskNum
+    for n = 1 : vehicleNum
+        if i <= sum(vehicleTask(1:n,:),1)
+            taskVehicle(i,n)=1;
+            break;
+        end
+    end
+end
+
+for i = 1: taskNum
+    for n = 1 : vehicleNum
+        if taskVehicle(i,n) == 1
+            vehicleId = V(n);
+            vehicleLoc = vehicleTrace(((vehicleId-1)*300+nowTime),:);
+            if mobileFogNum ~= 0
+                for j = 1 : mobileFogNum
+                    fogId = MF(j);
+                    mobileFogLoc = vehicleTrace((fogId-1)*300+nowTime,:);
+                    if isIn(vehicleLoc, mobileFogLoc)
+                        taskFog(i,j)=1;
+                    end
+                end
+            end
+            for m = 1 : fixedFogNum
+                if isIn(vehicleLoc, fixedFogLocal(m,:))
+                    taskFog(i,mobileFogNum+m) = 1;
+                end
+            end
+        end
+    end
+end
+
+taskFogProfit = zeros(taskNum,mobileFogNum+4);
+
+if mobileFogNum ~= 0
+    for i = 1 : mobileFogNum
+        taskInFog = taskFog(:,i);
+        sumSize = sum(taskSize.*taskInFog);
+        sumCom = sum(taskCpu.*taskInFog);
+        for j = 1 : taskNum
+            if taskFog(j,i) == 1
+                taskFogProfit(j,i) = taskSize(j)/sumSize + taskCpu(j)/sumCom;
+            end
+        end
+    end
+end
+
+for i = mobileFogNum+1 : mobileFogNum+fixedFogNum
+    taskInFog = taskFog(:,i);
+    sumSize = sum(taskSize.*taskInFog);
+    sumCom = sum(taskCpu.*taskInFog);
+    for j = 1 : taskNum
+        if taskFog(j,i) == 1
+            taskFogProfit(j,i) = taskSize(j)/sumSize + taskCpu(j)/sumCom;
+        end
+    end
+end
+
+taskEndTime = randi([1,300],taskNum,1);
+taskFogMiniTime = zeros(taskNum, mobileFogNum+fixedFogNum);
+
+for i = 1 : taskNum
+    for j = 1 : mobileFogNum + fixedFogNum
+        if taskFog(i,j) == 1
+            taskFogMiniTime(i,j) = taskEndTime(i);
+        end
+    end
+end
+
+for i = 1 : taskNum
+    % find vehicleID
+    for n = 1 : vehicleNum
+        if taskVehicle(i,n) == 1
+            vehicleId = V(n);
+        end
+    end
+    if mobileFogNum ~= 0
+        for j = 1 : mobileFogNum
+            if taskFog(i,j) == 1
+                for t = nowTime : 300
+                    vehicleLoc = vehicleTrace(((vehicleId-1)*300+t),:);
+                    mobileFogLoc = vehicleTrace(((MF(j)-1)*300+t),:);
+                    if isIn(vehicleLoc,mobileFogLoc) == 0
+                        leaveTime = t;
+                        taskFogMiniTime(i,j) = min(leaveTime,taskFogMiniTime(i,j));
+                        break;
+                    end
+                end
+            end
+        end
+    end
+    for j = mobileFogNum + 1 : mobileFogNum + fixedFogNum
+        if taskFog(i,j) == 1
+            for t = nowTime : 300
+                vehicleLoc = vehicleTrace(((vehicleId-1)*300+t),:);
+                fixedFogLoc = fixedFogLocal(j-mobileFogNum,:);
+                if isIn(vehicleLoc,fixedFogLoc) == 0
+                    leaveTime = t;
+                    taskFogMiniTime(i,j) = min(leaveTime,taskEndTime(i));
+                    break;
+                end
+            end
+        end
+    end
+end
+
+taskSumInFog = zeros(fogNum,1);
+for i = 1 : fogNum
+    taskInFog = taskFog(:,i);
+    taskSumInFog(i) = sum(taskInFog);
+end
+
+maxTaskSumInFog = max(taskSumInFog);
+
+fileName = 'datas.txt';
+writeNum(fileName,taskNum);
+writeNum(fileName,fogNum);
+writeNum(fileName,maxTaskSumInFog);
+writeMatrix(fileName,taskSize');
+writeMatrix(fileName,taskCpu');
+writeMatrix(fileName,cat(1,mobileFogSize,fixedFogSize)');
+writeMatrix(fileName,cat(1,mobileFogCompu,fixedFogCompu)');
+writeMatrix(fileName,cat(1,mobileFogTrans,fixedFogTrans)');
+writeMatrix(fileName,taskSumInFog');
+writeMatrix(fileName,taskFog');
+writeMatrix(fileName,taskFogProfit');
+writeMatrix(fileName,taskFogMiniTime');
+
+
+
+
+
+
 
     
     
+        
+    
+
+
+    
+
+
+
 
