@@ -231,7 +231,7 @@ for i = 1 : 1 %fogNum
                     else
                         if t >= startTime + timeProcess && t <= theTaskFogMiniTime(taskId)
                             if profits(b-1,t-timeProcess,s-taskSize(taskId)) + taskFogProfit(taskId,i) > profits(b,t,s)
-                                profits(b,t,s) = profits(b-1,t-timeProcess,s-taskSize(taskId)) + taskFogProfit(taskId,i);
+                                profits(b,t,s) = f(b-1,t-timeProcess,s-taskSize(taskId)) + taskFogProfit(taskId,i);
                                 choosedIdSet = [choosedIdSet,taskId];
                             end
                         end
