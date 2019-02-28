@@ -196,6 +196,88 @@ writeMatrix(fileName,taskFogMiniTime');
 % begin algorithm
 % for one fog node
 
+% taskFinish = zeros(taskNum,1);
+% taskChoosed = zeros(taskNum,fogNum);
+% startTime = 1;
+% 
+% while isTaskDone(taskFinish)
+%     % once arragement
+%     taskFogFinishTime = zeros(taskNum, fogNum);
+%     for i = 1 : fogNum
+%         % one fog node arragement
+%         theTaskFogMiniTime = taskFogMiniTime(:,i);
+%         timeMax = max(theTaskFogMiniTime);
+%         stopTime = timeMax - startTime + 1;
+%         theFogSize = fogSize(i);
+%         theFogTrans = fogTrans(i);
+%         theFogCompu = fogCompu(i);
+%         theTaskInFog = taskFog(:,i);
+%         [sortedTask, marked] = sort(theTaskFogMiniTime);
+%         choosedIdSet = [];
+%         profits = 0;
+%         for b = 1 : taskNum
+%             if sortedTask(b,1) ~= 0
+%                 theTaskInFog = marked([b,taskNum],:);
+%                 break;
+%             end
+%         end
+%         for b = 1 : numel(theTaskInFog)
+%             for t = startTime : stopTime
+%                 theTaskId = theTaskInFog(b);
+%                 theTaskSize = taskSize(theTaskId);
+%                 theTaskCpu = taskCpu(theTaskId);
+%                 theTaskTransTime = round(theTaskSize / theFogTrans);
+%                 theTaskProcessTime = round(theTaskCpu * theFogCompu);
+%                 if theTaskSize < theFogSize
+%                     if numel(choosedIdSet) == 0
+%                         if t >= startTime + theTaskTransTime + theTaskProcessTime && t <= theTaskFogMiniTime(theTaskId)
+%                             profits = taskFogProfit(taskId,i);
+%                             startTime = t;
+%                             choosedIdSet = [choosedIdSet, taskId];
+%                             taskFogFinishTime(theTaskId, i) = t;
+%                             break;
+%                         end
+%                     else
+%                         if t >= startTime + theTaskProcessTime && t <= theTaskFogMiniTime(theTaskId)
+%                             profits = taskFogProfit(taskId,i);
+%                             startTime = t;
+%                             choosedIdSet = [choosedIdSet, taskId];
+%                             taskFogFinishTime(theTaskId, i) = t;
+%                             break;
+%                         end
+%                     end
+%                 end
+%             end
+%         end
+%     end
+%     % vehicle choose the mini time
+%     for i = 1 : taskNum
+%         theTaskFinishTime = taskFogFinishTime(i,:);
+%         [sortedFinishTime, fogMarked] = sort(theTaskFinishTime);
+%         for j = 1 : fogNum
+%             if sortedFinishTime ~= 0
+%                 taskFinish(i) = 1;
+%                 taskChoosed(i,j) = 1;
+%                 break;
+%             end
+%         end
+%     end
+%     
+%     % when the task is not down and the time is not over
+%     % renew the startTime
+%     taskTimeSumInFog = zeros(fogNum,1);
+%     for i = 1 : fogNum
+%         for j = 1 : taskNum
+%             if taskChoosed(j,i) == 1
+%                 taskTimeSumInFog(i) = taskTimeSumFog(i) + round(taskCpu(j) * fogCompu(i));
+%             end
+%         end
+%     end
+%     startTime = max(taskTimeSumInFog);
+% end             
+        
+    
+
 for i = 1 : 1 %fogNum
     startTime = 1;
     theTaskFogMiniTime = taskFogMiniTime(:,i);
@@ -216,23 +298,27 @@ for i = 1 : 1 %fogNum
         for t = startTime : stopTime
             for s = 1 : theFogSize
                 taskId = theTaskInFog(b);
-                if fogSize(i) < taskSize(taskId)
-                    profits(b,t,s) = profits(b-1,t,s);
+                if s < taskSize(taskId)+1
+                    if b == 1
+                        profits(b,t,s) = 0;
+                    else
+                        profits(b,t,s) = profits(b-1,t,s);
+                    end
                 else
-                    timeTrans = taskSize(taskId) / fogTrans(i);
-                    timeProcess = taskCpu(taskId) * fogCompu(i);
+                    timeTrans = round(taskSize(taskId) / fogTrans(i));
+                    timeProcess = round(taskCpu(taskId) * fogCompu(i));
                     if numel(choosedIdSet) == 0
                         if t >= startTime+timeTrans+timeProcess && t <= theTaskFogMiniTime(taskId)
-                            if profits(b-1,t-timeTrans-timeProcess,s-taskSize(taskId)) + taskFogProfit(taskId,i) > f(b,t,s)
-                                profits(b,t,s) = profits(b-1,t-timeTrans-timeProcess,s-taskSize(taskId)) + taskFogProfit(taskId,i);
-                                choosedIdSet = [choosedIdSet,taskId];
-                            end
+                            profits(b,t,s) = taskFogProfit(taskId,i);
+                            choosedIdSet = [choosedIdSet,taskId];
                         end
                     else
                         if t >= startTime + timeProcess && t <= theTaskFogMiniTime(taskId)
-                            if profits(b-1,t-timeProcess,s-taskSize(taskId)) + taskFogProfit(taskId,i) > profits(b,t,s)
-                                profits(b,t,s) = profits(b-1,t-timeProcess,s-taskSize(taskId)) + taskFogProfit(taskId,i);
-                                choosedIdSet = [choosedIdSet,taskId];
+                            if b > 1
+                                if profits(b-1,t-timeProcess,s-taskSize(taskId)) + taskFogProfit(taskId,i) > profits(b,t,s)
+                                    profits(b,t,s) = profits(b-1,t-timeProcess,s-taskSize(taskId)) + taskFogProfit(taskId,i);
+                                    choosedIdSet = [choosedIdSet,taskId];
+                                end
                             end
                         end
                     end
