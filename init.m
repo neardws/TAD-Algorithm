@@ -38,7 +38,7 @@ for i = 1 : nowTime
 end
 
 vehicleNum = numel(V);
-vehicleTask = randi([1,1],vehicleNum,1);
+vehicleTask = randi([1,1l],vehicleNum,1);
 taskNum = sum(vehicleTask(:));
 taskVehicle = zeros(taskNum,vehicleNum);
 taskSize = randi([10,25],taskNum,1);
@@ -199,6 +199,7 @@ writeMatrix(fileName,taskFogMiniTime');
 taskFinish = zeros(taskNum,1);
 taskChoosed = zeros(taskNum,fogNum);
 startTime = 1;
+lastComplete = -1;
 
 disp('Start\n');
 
@@ -292,12 +293,44 @@ while isTaskDone(taskFinish)
     disp(taskFinish);
     
     complete = sum(taskFinish) / taskNum;
+    
     disp('Complete rate is');
     disp(complete);
     
     if startTime >= 300
         break;
     end
+    
+    if lastComplete == complete
+        break;
+    end
+    
+    % renew dates
+    nowTime = startTime;
+    lastComplete = complete;
+    for i = 1: taskNum
+        for n = 1 : vehicleNum
+            if taskVehicle(i,n) == 1
+                vehicleId = V(n);
+                vehicleLoc = vehicleTrace(((vehicleId-1)*300+nowTime),:);
+                if mobileFogNum ~= 0
+                    for j = 1 : mobileFogNum
+                        fogId = MF(j);
+                        mobileFogLoc = vehicleTrace((fogId-1)*300+nowTime,:);
+                        if isIn(vehicleLoc, mobileFogLoc)
+                            taskFog(i,j)=1;
+                        end
+                    end
+                end
+                for m = 1 : fixedFogNum
+                    if isIn(vehicleLoc, fixedFogLocal(m,:))
+                        taskFog(i,mobileFogNum+m) = 1;
+                    end
+                end
+            end
+        end
+    end
+    
     
     for i = 1 : taskNum
         if taskFinish(i) == 1
@@ -308,7 +341,30 @@ while isTaskDone(taskFinish)
         end
     end
     
-    nowTime = startTime;
+    if mobileFogNum ~= 0
+        for i = 1 : mobileFogNum
+            taskInFog = taskFog(:,i);
+            sumSize = sum(taskSize.*taskInFog);
+            sumCom = sum(taskCpu.*taskInFog);
+            for j = 1 : taskNum
+                if taskFog(j,i) == 1
+                    taskFogProfit(j,i) = taskSize(j)/sumSize + taskCpu(j)/sumCom;
+                end
+            end
+        end
+    end
+
+    for i = mobileFogNum+1 : mobileFogNum+fixedFogNum
+        taskInFog = taskFog(:,i);
+        sumSize = sum(taskSize.*taskInFog);
+        sumCom = sum(taskCpu.*taskInFog);
+        for j = 1 : taskNum
+            if taskFog(j,i) == 1
+                taskFogProfit(j,i) = taskSize(j)/sumSize + taskCpu(j)/sumCom;
+            end
+        end
+    end
+    
     for i = 1 : taskNum
     % find vehicleID
         for n = 1 : vehicleNum
