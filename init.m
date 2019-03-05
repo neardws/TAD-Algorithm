@@ -38,14 +38,14 @@ for i = 1 : nowTime
 end
 
 vehicleNum = numel(V);
-vehicleTask = randi([1,3],vehicleNum,1);
+vehicleTask = randi([1,1],vehicleNum,1);
 taskNum = sum(vehicleTask(:));
 taskVehicle = zeros(taskNum,vehicleNum);
 taskSize = randi([10,25],taskNum,1);
 taskCpu = randi([10,25],taskNum,1);
-taskCpu = taskCpu.*10e8;
+taskCpu = taskCpu.*1e9;
 
-etimes = 10e-10;
+etimes = 1e-10;
 fixedFogNum = 4;
 mobileFogNum = numel(MF);
 fogNum = fixedFogNum + mobileFogNum;
@@ -192,86 +192,7 @@ writeMatrix(fileName,taskSumInFog');
 writeMatrix(fileName,taskFog');
 writeMatrix(fileName,taskFogProfit');
 writeMatrix(fileName,taskFogMiniTime');
-
-
-
-% while isTaskDone(taskFinish)
-%     % once arragement
-%     taskFogFinishTime = zeros(taskNum, fogNum);
-%     for i = 1 : fogNum
-%         % one fog node arragement
-%         theTaskFogMiniTime = taskFogMiniTime(:,i);
-%         timeMax = max(theTaskFogMiniTime);
-%         stopTime = timeMax - startTime + 1;
-%         theFogSize = fogSize(i);
-%         theFogTrans = fogTrans(i);
-%         theFogCompu = fogCompu(i);
-%         theTaskInFog = taskFog(:,i);
-%         [sortedTask, marked] = sort(theTaskFogMiniTime);
-%         choosedIdSet = [];
-%         profits = 0;
-%         for b = 1 : taskNum
-%             if sortedTask(b,1) ~= 0
-%                 theTaskInFog = marked([b,taskNum],:);
-%                 break;
-%             end
-%         end
-%         for b = 1 : numel(theTaskInFog)
-%             for t = startTime : stopTime
-%                 theTaskId = theTaskInFog(b);
-%                 theTaskSize = taskSize(theTaskId);
-%                 theTaskCpu = taskCpu(theTaskId);
-%                 theTaskTransTime = round(theTaskSize / theFogTrans);
-%                 theTaskProcessTime = round(theTaskCpu * theFogCompu);
-%                 if theTaskSize < theFogSize
-%                     if numel(choosedIdSet) == 0
-%                         if t >= startTime + theTaskTransTime + theTaskProcessTime && t <= theTaskFogMiniTime(theTaskId)
-%                             profits = taskFogProfit(taskId,i);
-%                             startTime = t;
-%                             choosedIdSet = [choosedIdSet, taskId];
-%                             taskFogFinishTime(theTaskId, i) = t;
-%                             break;
-%                         end
-%                     else
-%                         if t >= startTime + theTaskProcessTime && t <= theTaskFogMiniTime(theTaskId)
-%                             profits = taskFogProfit(taskId,i);
-%                             startTime = t;
-%                             choosedIdSet = [choosedIdSet, taskId];
-%                             taskFogFinishTime(theTaskId, i) = t;
-%                             break;
-%                         end
-%                     end
-%                 end
-%             end
-%         end
-%     end
-%     % vehicle choose the mini time
-%     for i = 1 : taskNum
-%         theTaskFinishTime = taskFogFinishTime(i,:);
-%         [sortedFinishTime, fogMarked] = sort(theTaskFinishTime);
-%         for j = 1 : fogNum
-%             if sortedFinishTime ~= 0
-%                 taskFinish(i) = 1;
-%                 taskChoosed(i,j) = 1;
-%                 break;
-%             end
-%         end
-%     end
-%     
-%     % when the task is not down and the time is not over
-%     % renew the startTime
-%     taskTimeSumInFog = zeros(fogNum,1);
-%     for i = 1 : fogNum
-%         for j = 1 : taskNum
-%             if taskChoosed(j,i) == 1
-%                 taskTimeSumInFog(i) = taskTimeSumFog(i) + round(taskCpu(j) * fogCompu(i));
-%             end
-%         end
-%     end
-%     startTime = max(taskTimeSumInFog);
-% end             
-        
-
+            
 % begin algorithm
 % for one fog node
 
@@ -279,11 +200,16 @@ taskFinish = zeros(taskNum,1);
 taskChoosed = zeros(taskNum,fogNum);
 startTime = 1;
 
+disp('Start\n');
+
 while isTaskDone(taskFinish)
      % once arragement
     taskFogFinishTime = zeros(taskNum, fogNum);
     for i = 1 : fogNum
-        startTime = 1;
+        
+        disp('FogNum is ');
+        disp(i);
+        
         theTaskFogMiniTime = taskFogMiniTime(:,i);
         timeMax = max(theTaskFogMiniTime);
         stopTime = timeMax-startTime+1;
@@ -340,7 +266,7 @@ while isTaskDone(taskFinish)
         theTaskFinishTime = taskFogFinishTime(i,:);
         [sortedFinishTime, fogMarked] = sort(theTaskFinishTime);
         for j = 1 : fogNum
-            if sortedFinishTime ~= 0
+            if sortedFinishTime(1,j) ~= 0
                 taskFinish(i) = 1;
                 taskChoosed(i,j) = 1;
                 break;
@@ -353,16 +279,76 @@ while isTaskDone(taskFinish)
     for i = 1 : fogNum
         for j = 1 : taskNum
             if taskChoosed(j,i) == 1
-                taskTimeSumInFog(i) = taskTimeSumFog(i) + round(taskCpu(j) * fogCompu(i));
+                taskTimeSumInFog(i) = taskTimeSumInFog(i) + round(taskCpu(j) * fogCompu(i));
             end
         end
     end
     startTime = max(taskTimeSumInFog);
+    
+    disp('StartTime = ');
+    disp(startTime);
+    
+    disp('Result = ');
+    disp(taskFinish);
+    
+    complete = sum(taskFinish) / taskNum;
+    disp('Complete rate is');
+    disp(complete);
+    
     if startTime >= 300
         break;
+    end
+    
+    for i = 1 : taskNum
+        if taskFinish(i) == 1
+            for j = 1 : fogNum
+                taskFog(i,j) = 0;
+                taskFogMiniTime(i,j) = 0;
+            end
+        end
+    end
+    
+    nowTime = startTime;
+    for i = 1 : taskNum
+    % find vehicleID
+        for n = 1 : vehicleNum
+            if taskVehicle(i,n) == 1
+                vehicleId = V(n);
+            end
+        end
+        if mobileFogNum ~= 0
+            for j = 1 : mobileFogNum
+                if taskFog(i,j) == 1
+                    for t = nowTime : 300
+                        vehicleLoc = vehicleTrace(((vehicleId-1)*300+t),:);
+                        mobileFogLoc = vehicleTrace(((MF(j)-1)*300+t),:);
+                        if isIn(vehicleLoc,mobileFogLoc) == 0
+                            leaveTime = t;
+                            taskFogMiniTime(i,j) = min(leaveTime,taskFogMiniTime(i,j));
+                            break;
+                        end
+                    end
+                end
+            end
+        end
+        for j = mobileFogNum + 1 : mobileFogNum + fixedFogNum
+            if taskFog(i,j) == 1
+                for t = nowTime : 300
+                    vehicleLoc = vehicleTrace(((vehicleId-1)*300+t),:);
+                    fixedFogLoc = fixedFogLocal(j-mobileFogNum,:);
+                    if isIn(vehicleLoc,fixedFogLoc) == 0
+                        leaveTime = t;
+                        taskFogMiniTime(i,j) = min(leaveTime,taskEndTime(i));
+                        break;
+                    end
+                end
+            end
+        end
     end
 end
 
 complete = sum(taskFinish) / taskNum;
+disp('Final complete rate is');
+disp(complete);
 
                         
