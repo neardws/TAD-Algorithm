@@ -17,13 +17,37 @@ for i = 1 : m
     end
 end
 
-mobileFog = 20;
-mobileFogID = randi([1,110],mobileFog,1);
+MobileFogNum = 20;
+mobileFogID = randi([1,110],MobileFogNum,1);
+
+VehicleNum = 110 - MobileFogNum;
+vehicleTask = randi([1,5],VehicleNum,1);
+taskNum = sum(vehicleTask(:));
+taskVehicle = zeros(taskNum,VehicleNum);
+taskSize = randi([10,25],taskNum,1);
+taskCpu = randi([10,25],taskNum,1);
+taskCpu = taskCpu.*1e9;
+
+etimes = 1e-11;
+fixedFogNum = 4;
+fixedFogSize = randi([80,150],fixedFogNum,1);
+mobileFogSize = randi([50,100],MobileFogNum,1);
+fixedFogCompu = randi([5,10],fixedFogNum,1);
+fixedFogCompu = fixedFogCompu.*etimes;
+mobileFogCompu = randi([5,10],MobileFogNum,1);
+mobileFogCompu = mobileFogCompu.*etimes;
+fixedFogTrans = randi([20,40],fixedFogNum,1);
+mobileFogTrans = randi([10,20],MobileFogNum,1);
+
+taskFog = zeros(taskNum,mobileFogNum+fixedFogNum);
+fixedFogLocal = [500 500; 500 1000; 1000 500; 1000 1000];
+FogNum = MobileFogNum + fixedFogNum;
 
 nowTime = 1;
+
 MF = []; % Mobile Fog
 V = []; % Vehicles
-for i = 1 : nowTime
+for i = nowTime : nowTime
     inMapID = vehicleTime(:,i);
     for j = 1 : vehicleID
         if inMapID(j) == 1
@@ -37,30 +61,10 @@ for i = 1 : nowTime
         end  
     end
 end
-
-vehicleNum = numel(V);
-vehicleTask = randi([1,3],vehicleNum,1);
-taskNum = sum(vehicleTask(:));
-taskVehicle = zeros(taskNum,vehicleNum);
-taskSize = randi([10,25],taskNum,1);
-taskCpu = randi([10,25],taskNum,1);
-taskCpu = taskCpu.*1e9;
-
-etimes = 1e-11;
-fixedFogNum = 4;
 mobileFogNum = numel(MF);
-fogNum = fixedFogNum + mobileFogNum;
-fixedFogSize = randi([80,150],fixedFogNum,1);
-mobileFogSize = randi([50,100],mobileFogNum,1);
-fixedFogCompu = randi([5,10],fixedFogNum,1);
-fixedFogCompu = fixedFogCompu.*etimes;
-mobileFogCompu = randi([5,10],mobileFogNum,1);
-mobileFogCompu = mobileFogCompu.*etimes;
-fixedFogTrans = randi([20,40],fixedFogNum,1);
-mobileFogTrans = randi([10,20],mobileFogNum,1);
+vehicleNum = numel(V);
 
-taskFog = zeros(taskNum,mobileFogNum+fixedFogNum);
-fixedFogLocal = [500 500; 500 1000; 1000 500; 1000 1000];
+fogNum = fixedFogNum + mobileFogNum;
 
 for i = 1 : taskNum
     for n = 1 : vehicleNum
@@ -120,7 +124,8 @@ for i = mobileFogNum+1 : mobileFogNum+fixedFogNum
     end
 end
 
-taskEndTime = randi([100,300],taskNum,1);
+
+taskEndTime = randi([10,300],taskNum,1);
 taskFogMiniTime = zeros(taskNum, mobileFogNum+fixedFogNum);
 
 for i = 1 : taskNum
@@ -198,7 +203,7 @@ writeMatrix(fileName,taskFogMiniTime');
 % for one fog node
 
 taskFinish = zeros(taskNum,1);
-taskChoosed = zeros(taskNum,fogNum);
+taskChoosed = zeros(taskNum,FogNum);
 startTime = 1;
 lastComplete = -1;
 profitsSum = zeros(100,1);
@@ -218,6 +223,9 @@ while isTaskDone(taskFinish)
         theTaskFogMiniTime = taskFogMiniTime(:,i);
         timeMax = max(theTaskFogMiniTime);
         if timeMax+1 < startTime
+            break;
+        end
+        if startTime == 0
             break;
         end
         stopTime = timeMax;
@@ -321,6 +329,36 @@ while isTaskDone(taskFinish)
     nowTime = startTime;
     endTime(arragementTime) = startTime;
     lastComplete = complete;
+    
+    MF = []; % Mobile Fog
+    V = []; % Vehicles
+    for i = nowTime : nowTime
+        inMapID = vehicleTime(:,i);
+        for j = 1 : vehicleID
+            if inMapID(j) == 1
+                % j is a mobile Fog
+                if ismember(j,mobileFogID) 
+                    MF = [MF,j];
+                % j is a client vehicle
+                else
+                    V = [V,j];
+                end
+            end  
+        end
+    end
+    mobileFogNum = numel(MF);
+    vehicleNum = numel(V);
+    fogNum = fixedFogNum + mobileFogNum;
+
+    for i = 1 : taskNum
+        for n = 1 : vehicleNum
+            if i <= sum(vehicleTask(1:n,:),1)
+                taskVehicle(i,n)=1;
+                break;
+            end
+        end
+    end
+    
     for i = 1: taskNum
         for n = 1 : vehicleNum
             if taskVehicle(i,n) == 1
