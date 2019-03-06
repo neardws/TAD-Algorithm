@@ -39,14 +39,14 @@ for i = 1 : nowTime
 end
 
 vehicleNum = numel(V);
-vehicleTask = randi([1,3],vehicleNum,1);
+vehicleTask = randi([1,5],vehicleNum,1);
 taskNum = sum(vehicleTask(:));
 taskVehicle = zeros(taskNum,vehicleNum);
 taskSize = randi([10,25],taskNum,1);
 taskCpu = randi([10,25],taskNum,1);
 taskCpu = taskCpu.*1e9;
 
-etimes = 1e-11;
+etimes = 1e-10;
 fixedFogNum = 4;
 mobileFogNum = numel(MF);
 fogNum = fixedFogNum + mobileFogNum;
@@ -54,7 +54,7 @@ fixedFogSize = randi([80,150],fixedFogNum,1);
 mobileFogSize = randi([50,100],mobileFogNum,1);
 fixedFogCompu = randi([5,10],fixedFogNum,1);
 fixedFogCompu = fixedFogCompu.*etimes;
-mobileFogCompu = randi([5,10],mobileFogNum,1);
+mobileFogCompu = randi([1,5],mobileFogNum,1);
 mobileFogCompu = mobileFogCompu.*etimes;
 fixedFogTrans = randi([20,40],fixedFogNum,1);
 mobileFogTrans = randi([10,20],mobileFogNum,1);
@@ -206,9 +206,9 @@ endTime = zeros(100,1);
 
 disp('Start\n');
 
-arragementTime = 1;
 while isTaskDone(taskFinish)
      % once arragement
+    arragementTime = 1;
     taskFogFinishTime = zeros(taskNum, fogNum);
     for i = 1 : fogNum
         
@@ -308,18 +308,16 @@ while isTaskDone(taskFinish)
     disp(complete);
     
     if startTime >= 300
-        disp('startTime >= 300');
         break;
     end
     
     if lastComplete == complete
-        disp('lastComplete = complete');
         break;
     end
     
     % renew dates
     nowTime = startTime;
-    endTime(arragementTime) = startTime;
+    endTime(j) = startTime;
     lastComplete = complete;
     for i = 1: taskNum
         for n = 1 : vehicleNum
@@ -414,7 +412,7 @@ while isTaskDone(taskFinish)
             end
         end
     end
-    arragementTime = arragementTime + 1;
+     j = j + 1;
 end
 
 complete = sum(taskFinish) / taskNum;
