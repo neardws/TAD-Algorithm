@@ -11,7 +11,7 @@ for i = 1 : m
     x = trace(3);
     y = trace(4);
     if vehicleID ~= 0 && time ~= 0
-        vehicleTime(vehicleID,time) = 1;
+%         vehicleTime(vehicleID,time) = 1;
         vehicleTrace((vehicleID-1)*300+time,1) = x;
         vehicleTrace((vehicleID-1)*300+time,2) = y;
     end
