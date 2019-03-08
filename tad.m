@@ -28,7 +28,7 @@ end
 TaskEtimes = 1e9;
 MobileFogNum = 20;
 VehicleNum = VehicleSum - MobileFogNum;
-VehicleTask = randi([1,5],VehicleNum,1);
+VehicleTask = randi([1,1],VehicleNum,1);
 
 % Task
 TaskNum = sum(VehicleTask(:));
@@ -228,19 +228,21 @@ while isTaskDone(TaskFinish)
     %{
         Write File
     %}
-    fileName = 'datas.txt';
-    writeNum(fileName,TaskNum);
-    writeNum(fileName,FogNum);
-    writeNum(fileName,MaxTaskSumInFog);
-    writeMatrix(fileName,TaskSize');
-    writeMatrix(fileName,TaskCpu');
-    writeMatrix(fileName,FogSize');
-    writeMatrix(fileName,FogCompu');
-    writeMatrix(fileName,FogTrans');
-    writeMatrix(fileName,TaskSumInFog');
-    writeMatrix(fileName,TaskFog');
-    writeMatrix(fileName,TaskFogProfit');
-    writeMatrix(fileName,TaskFogMiniTime');
+    if arragementTime == 1
+        fileName = 'datas.txt';
+        writeNum(fileName,TaskNum);
+        writeNum(fileName,FogNum);
+        writeNum(fileName,MaxTaskSumInFog);
+        writeMatrix(fileName,TaskSize);
+        writeMatrix(fileName,TaskCpu);
+        writeMatrix(fileName,FogSize);
+        writeMatrix(fileName,FogCompu);
+        writeMatrix(fileName,FogTrans);
+        writeMatrix(fileName,TaskSumInFog);
+        writeMatrix(fileName,TaskFog');
+        writeMatrix(fileName,TaskFogProfit');
+        writeMatrix(fileName,TaskFogMiniTime');
+    end
     
     % once arragement
     
@@ -361,7 +363,11 @@ while isTaskDone(TaskFinish)
         startTime = startTime + 1;
         disp('lastComplete = complete');
     else
-        startTime = startTime + max(taskTimeSumInFog);
+        if max(taskTimeSumInFog) == 0
+            startTime = startTime + 1;
+        else
+            startTime = startTime + max(taskTimeSumInFog);
+        end
         disp('lastComplete ~= complete');
     end
     disp(startTime);
