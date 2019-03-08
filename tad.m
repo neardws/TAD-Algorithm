@@ -28,26 +28,26 @@ end
 TaskEtimes = 1e9;
 MobileFogNum = 20;
 VehicleNum = VehicleSum - MobileFogNum;
-VehicleTask = randi([1,1],VehicleNum,1);
+VehicleTask = randi([1,10],VehicleNum,1);
 
 % Task
 TaskNum = sum(VehicleTask(:));
 TaskVehicle = zeros(TaskNum,VehicleNum);
 TaskSize = randi([10,25],TaskNum,1);
 TaskCpu = randi([10,25],TaskNum,1)*TaskEtimes;
-TaskEndTime = randi([10,300],TaskNum,1);
+TaskEndTime = randi([100,300],TaskNum,1);
 
 % Fog
-FogEtimes = 1e-10;
+FogEtimes = 1e-12;
 
 FixedFogNum = 4;
 FixedFogLocal = [500 500; 500 1000; 1000 500; 1000 1000];
-FixedFogSize = randi([80,150],FixedFogNum,1);
+FixedFogSize = randi([150,300],FixedFogNum,1);
 FixedFogCompu = randi([5,10],FixedFogNum,1)*FogEtimes;
 FixedFogTrans = randi([20,40],FixedFogNum,1);
 
 MobileFogID = randperm(110, MobileFogNum);
-MobileFogSize = randi([50,100],MobileFogNum,1);
+MobileFogSize = randi([150,300],MobileFogNum,1);
 MobileFogCompu = randi([5,10],MobileFogNum,1)*FogEtimes;
 MobileFogTrans = randi([10,20],MobileFogNum,1);
 
@@ -76,144 +76,6 @@ for id = 1 : VehicleSum
     end
 end
 
-
-%{ 
-    NowTime Update Every Arragement
-%}
-% nowTime = 1;
-
-% % Task & Fog
-% TaskFog = zeros(TaskNum,FogNum);
-% 
-% for i = 1: TaskNum
-%     for n = 1 : VehicleNum
-%         % Task i is in Vehicle n
-%         if TaskVehicle(i,n) == 1
-%             vehicleId = V(n);
-%             if VehicleTime(vehicleId, nowTime)
-%                 vehicleLoc = VehicleTrace(((vehicleId-1)*300+nowTime),:);
-%                 if MobileFogNum ~= 0
-%                     for m = 1 : MobileFogNum
-%                         fogId = MF(m);
-%                         if VehicleTime(fogId, nowTime)
-%                             mobileFogLoc = VehicleTrace((fogId-1)*300+nowTime,:);
-%                             if isIn(vehicleLoc, mobileFogLoc)
-%                                 TaskFog(i,m)=1;
-%                             end
-%                         end
-%                     end
-%                     for m = 1 : FixedFogNum
-%                         if isIn(vehicleLoc, FixedFogLocal(m,:))
-%                             TaskFog(i,MobileFogNum+m) = 1;
-%                         end
-%                     end
-%                 end
-%             end
-%         end
-%     end
-% end
-% 
-% % Profits of task in fog 
-% TaskFogProfit = zeros(TaskNum,FogNum);
-% 
-% if MobileFogNum ~= 0
-%     for m = 1 : MobileFogNum
-%         taskInFog = TaskFog(:,m);
-%         sumSize = sum(TaskSize.*taskInFog);
-%         sumCom = sum(TaskCpu.*taskInFog);
-%         for i = 1 : TaskNum
-%             if TaskFog(i,m) == 1
-%                 TaskFogProfit(i,m) = TaskSize(i)/sumSize + TaskCpu(i)/sumCom;
-%             end
-%         end
-%     end
-% end
-% 
-% for m = MobileFogNum +1 : FogNum
-%     taskInFog = TaskFog(:,m);
-%     sumSize = sum(TaskSize.*taskInFog);
-%     sumCom = sum(TaskCpu.*taskInFog);
-%     for i = 1 : TaskNum
-%         if TaskFog(i,m) == 1
-%             TaskFogProfit(i,m) = TaskSize(i)/sumSize + TaskCpu(i)/sumCom;
-%         end
-%     end
-% end
-% 
-% % Mini time of task
-% TaskFogMiniTime = zeros(TaskNum, FogNum);
-% 
-% for i = 1 : TaskNum
-%     for m = 1 : FogNum
-%         if TaskFog(i,m) == 1
-%             TaskFogMiniTime(i,m) = TaskEndTime(i);
-%         end
-%     end
-% end
-% 
-% for i = 1 : TaskNum
-%     % find vehicleID
-%     for n = 1 : VehicleNum
-%         if TaskVehicle(i,n) == 1
-%             vehicleId = V(n);
-%         end
-%     end
-%     if MobileFogNum ~= 0
-%         for m = 1 : MobileFogNum
-%             if TaskFog(i,m) == 1
-%                 for t = nowTime : TimeSum
-%                     vehicleLoc = VehicleTrace(((vehicleId-1)*TimeSum + t),:);
-%                     mobileFogLoc = VehicleTrace(((MF(m)-1)*TimeSum + t),:);
-%                     if isIn(vehicleLoc,mobileFogLoc) == 0
-%                         leaveTime = t;
-%                         TaskFogMiniTime(i,m) = min(leaveTime,taskFogMiniTime(i));
-%                         break;
-%                     end
-%                 end
-%             end
-%         end
-%     end
-%     for m = MobileFogNum + 1 : FogNum
-%         if TaskFog(i,m) == 1
-%             for t = nowTime : TimeSum
-%                 vehicleLoc = VehicleTrace(((vehicleId-1)*TimeSum + t),:);
-%                 fixedFogLoc = FixedFogLocal(m-MobileFogNum,:);
-%                 if isIn(vehicleLoc,fixedFogLoc) == 0
-%                     leaveTime = t;
-%                     TaskFogMiniTime(i,m) = min(leaveTime,taskEndTime(i));
-%                     break;
-%                 end
-%             end
-%         end
-%     end
-% end
-
-% taskSumInFog = zeros(FogNum,1);
-% for i = 1 : FogNum
-%     taskInFog = TaskFog(:,i);
-%     taskSumInFog(i) = sum(taskInFog);
-% end
-% 
-% maxTaskSumInFog = max(taskSumInFog);
-
-%{
-    Write File
-%}
-% fileName = 'datas.txt';
-% writeNum(fileName,taskNum);
-% writeNum(fileName,fogNum);
-% writeNum(fileName,maxTaskSumInFog);
-% writeMatrix(fileName,taskSize');
-% writeMatrix(fileName,taskCpu');
-% writeMatrix(fileName,fogSize');
-% writeMatrix(fileName,fogCompu');
-% writeMatrix(fileName,fogTrans');
-% writeMatrix(fileName,taskSumInFog');
-% writeMatrix(fileName,taskFog');
-% writeMatrix(fileName,taskFogProfit');
-% writeMatrix(fileName,taskFogMiniTime');
-
-
 %{
     TAD-Algorithm
 %}
@@ -222,17 +84,23 @@ TaskFinish = zeros(TaskNum,1);
 TaskChoosed = zeros(TaskNum,FogNum);
 startTime = 1;
 lastComplete = -1;
-profitsSum = zeros(100,1);
-endTime = zeros(100,1);
-arragementTime = 1;
+profitsSum = zeros(500,1);
+endTime = zeros(500,1);
+arragementTime = 0;
 taskFogFinishTime = zeros(TaskNum, FogNum);
 
 while isTaskDone(TaskFinish)
     %{ 
         NowTime Update Every Arragement
     %} 
+    if startTime >= 300
+        disp('startTime >= 300');
+        break;
+    end
     % Task & Fog
     nowTime = startTime;
+    arragementTime = arragementTime + 1;
+
     TaskFog = zeros(TaskNum,FogNum);
     
     for i = 1: TaskNum
@@ -262,34 +130,7 @@ while isTaskDone(TaskFinish)
             end
         end
     end
-
-    % Profits of task in fog 
-    TaskFogProfit = zeros(TaskNum,FogNum);
-
-    if MobileFogNum ~= 0
-        for m = 1 : MobileFogNum
-            taskInFog = TaskFog(:,m);
-            sumSize = sum(TaskSize.*taskInFog);
-            sumCom = sum(TaskCpu.*taskInFog);
-            for i = 1 : TaskNum
-                if TaskFog(i,m) == 1
-                    TaskFogProfit(i,m) = TaskSize(i)/sumSize + TaskCpu(i)/sumCom;
-                end
-            end
-        end
-    end
-
-    for m = MobileFogNum +1 : FogNum
-        taskInFog = TaskFog(:,m);
-        sumSize = sum(TaskSize.*taskInFog);
-        sumCom = sum(TaskCpu.*taskInFog);
-        for i = 1 : TaskNum
-            if TaskFog(i,m) == 1
-                TaskFogProfit(i,m) = TaskSize(i)/sumSize + TaskCpu(i)/sumCom;
-            end
-        end
-    end
-
+    
     % Mini time of task
     TaskFogMiniTime = zeros(TaskNum, FogNum);
 
@@ -337,6 +178,70 @@ while isTaskDone(TaskFinish)
             end
         end
     end
+    
+    
+    for i = 1 : TaskNum
+        if TaskFinish(i) == 1
+            for m = 1 : FogNum
+                TaskFog(i,m) = 0;
+                TaskFogMiniTime(i,m) = 0;
+            end
+        end
+    end
+    
+
+    % Profits of task in fog 
+    TaskFogProfit = zeros(TaskNum,FogNum);
+
+    if MobileFogNum ~= 0
+        for m = 1 : MobileFogNum
+            taskInFog = TaskFog(:,m);
+            sumSize = sum(TaskSize.*taskInFog);
+            sumCom = sum(TaskCpu.*taskInFog);
+            for i = 1 : TaskNum
+                if TaskFog(i,m) == 1
+                    TaskFogProfit(i,m) = TaskSize(i)/sumSize + TaskCpu(i)/sumCom;
+                end
+            end
+        end
+    end
+
+    for m = MobileFogNum +1 : FogNum
+        taskInFog = TaskFog(:,m);
+        sumSize = sum(TaskSize.*taskInFog);
+        sumCom = sum(TaskCpu.*taskInFog);
+        for i = 1 : TaskNum
+            if TaskFog(i,m) == 1
+                TaskFogProfit(i,m) = TaskSize(i)/sumSize + TaskCpu(i)/sumCom;
+            end
+        end
+    end
+    
+    TaskSumInFog = zeros(FogNum,1);
+    for i = 1 : FogNum
+        TaskInFog = TaskFog(:,i);
+        TaskSumInFog(i) = sum(TaskInFog);
+    end
+
+    MaxTaskSumInFog = max(TaskSumInFog);
+    
+    %{
+        Write File
+    %}
+    fileName = 'datas.txt';
+    writeNum(fileName,TaskNum);
+    writeNum(fileName,FogNum);
+    writeNum(fileName,MaxTaskSumInFog);
+    writeMatrix(fileName,TaskSize');
+    writeMatrix(fileName,TaskCpu');
+    writeMatrix(fileName,FogSize');
+    writeMatrix(fileName,FogCompu');
+    writeMatrix(fileName,FogTrans');
+    writeMatrix(fileName,TaskSumInFog');
+    writeMatrix(fileName,TaskFog');
+    writeMatrix(fileName,TaskFogProfit');
+    writeMatrix(fileName,TaskFogMiniTime');
+    
     % once arragement
     
     for i = 1 : FogNum
@@ -433,32 +338,36 @@ while isTaskDone(TaskFinish)
             end
         end
     end
-    startTime = max(taskTimeSumInFog);
     
-    disp('StartTime = ');
-    disp(startTime);
     
-    disp('Result = ');
-    disp(TaskFinish);
+%     disp('StartTime = ');
+%     disp(startTime);
+    
+%     disp('Result = ');
+%     disp(TaskFinish);
     
     complete = sum(TaskFinish) / TaskNum;
     
     disp('Complete rate is');
     disp(complete);
     
-    if startTime >= 300
-        disp('startTime >= 300');
-        break;
-    end
+%     disp('Task Finish is');
+%     disp(numel(TaskFinish));
     
+    disp('StartTime = ');
+    disp(startTime);
+    disp('======================================')
     if lastComplete == complete
+        startTime = startTime + 1;
         disp('lastComplete = complete');
-        break;
+    else
+        startTime = startTime + max(taskTimeSumInFog);
+        disp('lastComplete ~= complete');
     end
+    disp(startTime);
     
     endTime(arragementTime) = startTime;
     lastComplete = complete;
-    arragementTime = arragementTime + 1;
     disp('new arrage');
 end
 

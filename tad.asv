@@ -28,26 +28,26 @@ end
 TaskEtimes = 1e9;
 MobileFogNum = 20;
 VehicleNum = VehicleSum - MobileFogNum;
-VehicleTask = randi([1,1],VehicleNum,1);
+VehicleTask = randi([1,5],VehicleNum,1);
 
 % Task
 TaskNum = sum(VehicleTask(:));
 TaskVehicle = zeros(TaskNum,VehicleNum);
 TaskSize = randi([10,25],TaskNum,1);
 TaskCpu = randi([10,25],TaskNum,1)*TaskEtimes;
-TaskEndTime = randi([10,300],TaskNum,1);
+TaskEndTime = randi([100,300],TaskNum,1);
 
 % Fog
-FogEtimes = 1e-10;
+FogEtimes = 1e-12;
 
 FixedFogNum = 4;
 FixedFogLocal = [500 500; 500 1000; 1000 500; 1000 1000];
-FixedFogSize = randi([80,150],FixedFogNum,1);
+FixedFogSize = randi([150,300],FixedFogNum,1);
 FixedFogCompu = randi([5,10],FixedFogNum,1)*FogEtimes;
 FixedFogTrans = randi([20,40],FixedFogNum,1);
 
 MobileFogID = randperm(110, MobileFogNum);
-MobileFogSize = randi([50,100],MobileFogNum,1);
+MobileFogSize = randi([150,300],MobileFogNum,1);
 MobileFogCompu = randi([5,10],MobileFogNum,1)*FogEtimes;
 MobileFogTrans = randi([10,20],MobileFogNum,1);
 
@@ -233,6 +233,7 @@ while isTaskDone(TaskFinish)
     %} 
     % Task & Fog
     nowTime = startTime;
+
     TaskFog = zeros(TaskNum,FogNum);
     
     for i = 1: TaskNum
@@ -262,6 +263,17 @@ while isTaskDone(TaskFinish)
             end
         end
     end
+    
+    
+    for i = 1 : taskNum
+        if taskFinish(i) == 1
+            for j = 1 : fogNum
+                taskFog(i,j) = 0;
+                taskFogMiniTime(i,j) = 0;
+            end
+        end
+    end
+    
 
     % Profits of task in fog 
     TaskFogProfit = zeros(TaskNum,FogNum);
@@ -351,11 +363,12 @@ while isTaskDone(TaskFinish)
             break;
         end
         if startTime == 0
-            disp()
+            disp('startTime == 0');
             break;
         end
         if stopTime == 0
-            break;
+            disp('stopTime == 0');
+            continue;
         end
         theFogSize = FogSize(i);
         theTaskInFog = TaskFog(:,i);
@@ -392,8 +405,8 @@ while isTaskDone(TaskFinish)
                         else
                             if t >= startTime + timeProcess && t <= theTaskFogMiniTime(taskId)
                                 if b > 1
-                                    if profits(b-1,t-timeProcess,s-taskSize(taskId)) + TaskFogProfit(taskId,i) > profits(b,t,s)
-                                        profits(b,t,s) = profits(b-1,t-timeProcess,s-taskSize(taskId)) + TaskFogProfit(taskId,i);
+                                    if profits(b-1,t-timeProcess,s-TaskSize(taskId)) + TaskFogProfit(taskId,i) > profits(b,t,s)
+                                        profits(b,t,s) = profits(b-1,t-timeProcess,s-TaskSize(taskId)) + TaskFogProfit(taskId,i);
                                         choosedIdSet{b,t,s} = [choosedIdSet{b,t,s},taskId];
                                         taskFogFinishTime(taskId, i) = t;
                                     end
@@ -432,7 +445,7 @@ while isTaskDone(TaskFinish)
             end
         end
     end
-    startTime = max(taskTimeSumInFog);
+    
     
     disp('StartTime = ');
     disp(startTime);
@@ -445,13 +458,24 @@ while isTaskDone(TaskFinish)
     disp('Complete rate is');
     disp(complete);
     
-    if startTime >= 300
-        disp('startTime >= 300');
-        break;
+%     disp('Task Finish is');
+%     disp(numel(TaskFinish));
+    
+    
+    disp('======================================')
+    disp(startTime)
+    if lastComplete == complete
+        startTime = startTime + 5;
+        disp('Time is');
+        disp(startTime);
+        disp('lastComplete = complete');
+        continue;
+    else
+        startTime = startTime + max(taskTimeSumInFog);
     end
     
-    if lastComplete == complete
-        disp('lastComplete = complete');
+    if startTime >= 300
+        disp('startTime >= 300');
         break;
     end
     
