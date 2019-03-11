@@ -28,7 +28,7 @@ end
 TaskEtimes = 1e9;
 MobileFogNum = 20;
 VehicleNum = VehicleSum - MobileFogNum;
-VehicleTask = randi([1,5],VehicleNum,1);
+VehicleTask = randi([2,2],VehicleNum,1);
 
 % Task
 TaskNum = sum(VehicleTask(:));
@@ -196,8 +196,9 @@ while isTaskDone(TaskFinish)
     if MobileFogNum ~= 0
         for m = 1 : MobileFogNum
             taskInFog = TaskFog(:,m);
-            sumSize = sum(TaskSize.*taskInFog)/sum(taskInFog(:)==1);
-            sumCom = sum(TaskCpu.*taskInFog)/sum(taskInFog(:)==1);
+            taskInFogNum = sum(taskInFog(:)==1);
+            sumSize = sum(TaskSize.*taskInFog)/taskInFogNum;
+            sumCom = sum(TaskCpu.*taskInFog)/taskInFogNum;
             for i = 1 : TaskNum
                 if TaskFog(i,m) == 1
                     TaskFogProfit(i,m) = TaskSize(i)/sumSize + TaskCpu(i)/sumCom;
@@ -208,8 +209,9 @@ while isTaskDone(TaskFinish)
 
     for m = MobileFogNum +1 : FogNum
         taskInFog = TaskFog(:,m);
-        sumSize = sum(TaskSize.*taskInFog);
-        sumCom = sum(TaskCpu.*taskInFog);
+        taskInFogNum = sum(taskInFog(:)==1);
+        sumSize = sum(TaskSize.*taskInFog)/taskInFogNum;
+        sumCom = sum(TaskCpu.*taskInFog)/taskInFogNum;
         for i = 1 : TaskNum
             if TaskFog(i,m) == 1
                 TaskFogProfit(i,m) = TaskSize(i)/sumSize + TaskCpu(i)/sumCom;
@@ -455,8 +457,14 @@ while isTaskDone(TaskFinish)
             end
         end
         disp('profits is');
-        disp(profits(b,t,s));
-        profitsSum(arragementTime) = profitsSum(arragementTime) + profits(b,t,s);
+        if s > theFogSize
+            disp(profits(b,t,theFogSize));
+        	profitsSum(arragementTime) = profitsSum(arragementTime) + profits(b,t,theFogSize);
+        else
+            disp(profits(b,t,s));
+        	profitsSum(arragementTime) = profitsSum(arragementTime) + profits(b,t,s);
+        end
+        
     end
     
     % vehicle choose the mini time
