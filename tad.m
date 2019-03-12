@@ -28,7 +28,7 @@ end
 TaskEtimes = 1e8;
 MobileFogNum = 20;
 VehicleNum = VehicleSum - MobileFogNum;
-VehicleTask = randi([10,10],VehicleNum,1);
+VehicleTask = randi([6,6],VehicleNum,1);
 
 % Task
 TaskNum = sum(VehicleTask(:));
