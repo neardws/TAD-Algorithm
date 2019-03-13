@@ -1,60 +1,76 @@
-% import frome TXT
+% % % % import frome TXT
 
-VehicleSum = 110;
-TimeSum = 300;
-
-origindata = importdata("data.txt");
-[m,n] = size(origindata);
-VehicleTime = zeros(VehicleSum,TimeSum);
-VehicleTrace = zeros(VehicleSum*TimeSum,2);
-for i = 1 : m
-    trace = origindata(i,:);
-    vehicleID = trace(1);
-    time = trace(2);
-    x = trace(3);
-    y = trace(4);
-    if vehicleID ~= 0 && time ~= 0
-        VehicleTime(vehicleID,time) = 1;
-        VehicleTrace((vehicleID-1)*TimeSum+time,1) = x;
-        VehicleTrace((vehicleID-1)*TimeSum+time,2) = y;
-    end
-end
+% VehicleSum = 110;
+% TimeSum = 300;
+% 
+% origindata = importdata("data.txt");
+% [m,n] = size(origindata);
+% VehicleTime = zeros(VehicleSum,TimeSum);
+% VehicleTrace = zeros(VehicleSum*TimeSum,2);
+% for i = 1 : m
+%     trace = origindata(i,:);
+%     vehicleID = trace(1);
+%     time = trace(2);
+%     x = trace(3);
+%     y = trace(4);
+%     if vehicleID ~= 0 && time ~= 0
+%         VehicleTime(vehicleID,time) = 1;
+%         VehicleTrace((vehicleID-1)*TimeSum+time,1) = x;
+%         VehicleTrace((vehicleID-1)*TimeSum+time,2) = y;
+%     end
+% end
+% 
+% %{
+%     Init some date
+% %}
+% 
+% % Vehicle
+% TaskEtimes = 1e8;
+% MobileFogNum = 20;
+% VehicleNum = VehicleSum - MobileFogNum;
+% 
+% 
+% % Fog
+% FogEtimes = 1e-12;
+% 
+% FixedFogNum = 4;
+% FixedFogLocal = [500 500; 500 1000; 1000 500; 1000 1000];
+% FixedFogSize = randi([800,1200],FixedFogNum,1);
+% FixedFogCompu = randi([100,200],FixedFogNum,1)*FogEtimes;
+% FixedFogTrans = randi([20,40],FixedFogNum,1);
+% 
+% MobileFogID = randperm(110, MobileFogNum);
+% MobileFogSize = randi([150,300],MobileFogNum,1);
+% MobileFogCompu = randi([5,10],MobileFogNum,1)*FogEtimes;
+% MobileFogTrans = randi([10,20],MobileFogNum,1);
+% 
+% FogNum = MobileFogNum + FixedFogNum;
+% FogSize = cat(1,MobileFogSize,FixedFogSize);
+% FogCompu = cat(1,MobileFogCompu,FixedFogCompu);
+% FogTrans = cat(1,MobileFogTrans,FixedFogTrans);
+% 
+% MF = []; % Mobile Fog ID
+% V = []; % Vehicles ID
+% for id = 1 : VehicleSum
+%     if ismember(id,MobileFogID) 
+%         MF = [MF,id];
+%     else
+%         V = [V,id];
+%     end
+% end
 
 %{
-    Init some date
+    TAD-Algorithm
 %}
 
-% Vehicle
-TaskEtimes = 1e8;
-MobileFogNum = 20;
-VehicleNum = VehicleSum - MobileFogNum;
-VehicleTask = randi([6,6],VehicleNum,1);
+VehicleTask = randi([4,5],VehicleNum,1);
 
 % Task
 TaskNum = sum(VehicleTask(:));
 TaskVehicle = zeros(TaskNum,VehicleNum);
-TaskSize = randi([100,250],TaskNum,1);
+TaskSize = randi([10,25],TaskNum,1);
 TaskCpu = randi([10,25],TaskNum,1)*TaskEtimes;
 TaskEndTime = randi([100,300],TaskNum,1);
-
-% Fog
-FogEtimes = 1e-12;
-
-FixedFogNum = 4;
-FixedFogLocal = [500 500; 500 1000; 1000 500; 1000 1000];
-FixedFogSize = randi([150,300],FixedFogNum,1);
-FixedFogCompu = randi([100,200],FixedFogNum,1)*FogEtimes;
-FixedFogTrans = randi([20,40],FixedFogNum,1);
-
-MobileFogID = randperm(110, MobileFogNum);
-MobileFogSize = randi([150,300],MobileFogNum,1);
-MobileFogCompu = randi([5,10],MobileFogNum,1)*FogEtimes;
-MobileFogTrans = randi([10,20],MobileFogNum,1);
-
-FogNum = MobileFogNum + FixedFogNum;
-FogSize = cat(1,MobileFogSize,FixedFogSize);
-FogCompu = cat(1,MobileFogCompu,FixedFogCompu);
-FogTrans = cat(1,MobileFogTrans,FixedFogTrans);
 
 % Task & Vehicle
 for i = 1 : TaskNum
@@ -65,20 +81,6 @@ for i = 1 : TaskNum
         end
     end
 end
-
-MF = []; % Mobile Fog ID
-V = []; % Vehicles ID
-for id = 1 : VehicleSum
-    if ismember(id,MobileFogID) 
-        MF = [MF,id];
-    else
-        V = [V,id];
-    end
-end
-
-%{
-    TAD-Algorithm
-%}
 
 TaskFinish = zeros(TaskNum,1);
 TaskChoosed = zeros(TaskNum,FogNum);
@@ -249,8 +251,8 @@ while isTaskDone(TaskFinish)
     % once arragement
     
     for i = 1 : FogNum
-        disp('FogNum is ');
-        disp(i);
+%         disp('FogNum is ');
+%         disp(i);
         
         theTaskFogMiniTime = TaskFogMiniTime(:,i);
         timeMax = max(theTaskFogMiniTime);
@@ -315,12 +317,12 @@ while isTaskDone(TaskFinish)
                 end
             end
         end
-        disp('profits is');
+%         disp('profits is');
         if s > theFogSize
-            disp(profits(b,t,theFogSize));
+%             disp(profits(b,t,theFogSize));
         	profitsSum(arragementTime) = profitsSum(arragementTime) + profits(b,t,theFogSize);
         else
-            disp(profits(b,t,s));
+%             disp(profits(b,t,s));
         	profitsSum(arragementTime) = profitsSum(arragementTime) + profits(b,t,s);
         end
         
@@ -344,7 +346,7 @@ while isTaskDone(TaskFinish)
     for i = 1 : FogNum
         for j = 1 : TaskNum
             if TaskChoosed(j,i) == 1
-                taskTimeSumInFog(i) = taskTimeSumInFog(i) + round(TaskCpu(j) * FogCompu(i));
+                taskTimeSumInFog(i) = taskTimeSumInFog(i) + TaskCpu(j) * FogCompu(i);
             end
         end
     end
@@ -367,22 +369,24 @@ while isTaskDone(TaskFinish)
     disp('StartTime = ');
     disp(startTime);
     disp('======================================')
+    
     if lastComplete == complete
         startTime = startTime + 1;
         disp('lastComplete = complete');
     else
         if max(taskTimeSumInFog) == 0
             startTime = startTime + 1;
+            endTime(arragementTime) = 0;
         else
-            startTime = startTime + max(taskTimeSumInFog);
+            startTime = startTime + round(max(taskTimeSumInFog));
+            endTime(arragementTime) =  max(taskTimeSumInFog);
         end
         disp('lastComplete ~= complete');
     end
-    disp(startTime);
+%     disp(startTime);
     
-    endTime(arragementTime) = startTime;
     lastComplete = complete;
-    disp('new arrage');
+%     disp('new arrage');
 end
 
 complete = sum(TaskFinish) / TaskNum;
