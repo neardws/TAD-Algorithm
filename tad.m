@@ -1,63 +1,61 @@
 % % % % import frome TXT
 
-% VehicleSum = 110;
-% TimeSum = 300;
-% 
-% origindata = importdata("data.txt");
-% [m,n] = size(origindata);
-% VehicleTime = zeros(VehicleSum,TimeSum);
-% VehicleTrace = zeros(VehicleSum*TimeSum,2);
-% for i = 1 : m
-%     trace = origindata(i,:);
-%     vehicleID = trace(1);
-%     time = trace(2);
-%     x = trace(3);
-%     y = trace(4);
-%     if vehicleID ~= 0 && time ~= 0
-%         VehicleTime(vehicleID,time) = 1;
-%         VehicleTrace((vehicleID-1)*TimeSum+time,1) = x;
-%         VehicleTrace((vehicleID-1)*TimeSum+time,2) = y;
-%     end
-% end
-% 
-% %{
-%     Init some date
-% %}
-% 
-% % Vehicle
-% TaskEtimes = 1e8;
-% MobileFogNum = 20;
-% VehicleNum = VehicleSum - MobileFogNum;
-% 
-% 
-% % Fog
-% FogEtimes = 1e-12;
-% 
-% FixedFogNum = 4;
-% FixedFogLocal = [500 500; 500 1000; 1000 500; 1000 1000];
-% FixedFogSize = randi([800,1200],FixedFogNum,1);
-% FixedFogCompu = randi([100,200],FixedFogNum,1)*FogEtimes;
-% FixedFogTrans = randi([20,40],FixedFogNum,1);
-% 
-% MobileFogID = randperm(110, MobileFogNum);
-% MobileFogSize = randi([150,300],MobileFogNum,1);
-% MobileFogCompu = randi([5,10],MobileFogNum,1)*FogEtimes;
-% MobileFogTrans = randi([10,20],MobileFogNum,1);
-% 
-% FogNum = MobileFogNum + FixedFogNum;
-% FogSize = cat(1,MobileFogSize,FixedFogSize);
-% FogCompu = cat(1,MobileFogCompu,FixedFogCompu);
-% FogTrans = cat(1,MobileFogTrans,FixedFogTrans);
-% 
-% MF = []; % Mobile Fog ID
-% V = []; % Vehicles ID
-% for id = 1 : VehicleSum
-%     if ismember(id,MobileFogID) 
-%         MF = [MF,id];
-%     else
-%         V = [V,id];
-%     end
-% end
+VehicleSum = 110;
+TimeSum = 300;
+
+origindata = importdata("data.txt");
+[m,n] = size(origindata);
+VehicleTime = zeros(VehicleSum,TimeSum);
+VehicleTrace = zeros(VehicleSum*TimeSum,2);
+for i = 1 : m
+    trace = origindata(i,:);
+    vehicleID = trace(1);
+    time = trace(2);
+    if vehicleID ~= 0 && time ~= 0
+        VehicleTime(vehicleID,time) = 1;
+        VehicleTrace((vehicleID-1)*TimeSum+time,1) = trace(3);
+        VehicleTrace((vehicleID-1)*TimeSum+time,2) = trace(4);
+    end
+end
+
+%{
+    Init some date
+%}
+
+% Vehicle
+TaskEtimes = 1e8;
+MobileFogNum = 20;
+VehicleNum = VehicleSum - MobileFogNum;
+
+
+% Fog
+FogEtimes = 1e-12;
+
+FixedFogNum = 4;
+FixedFogLocal = [500 500; 500 1000; 1000 500; 1000 1000];
+FixedFogSize = randi([800,1200],FixedFogNum,1);
+FixedFogCompu = randi([100,200],FixedFogNum,1)*FogEtimes;
+FixedFogTrans = randi([20,40],FixedFogNum,1);
+
+MobileFogID = randperm(110, MobileFogNum);
+MobileFogSize = randi([150,300],MobileFogNum,1);
+MobileFogCompu = randi([5,10],MobileFogNum,1)*FogEtimes;
+MobileFogTrans = randi([10,20],MobileFogNum,1);
+
+FogNum = MobileFogNum + FixedFogNum;
+FogSize = cat(1,MobileFogSize,FixedFogSize);
+FogCompu = cat(1,MobileFogCompu,FixedFogCompu);
+FogTrans = cat(1,MobileFogTrans,FixedFogTrans);
+
+MF = []; % Mobile Fog ID
+V = []; % Vehicles ID
+for id = 1 : VehicleSum
+    if ismember(id,MobileFogID) 
+        MF = [MF,id];
+    else
+        V = [V,id];
+    end
+end
 
 %{
     TAD-Algorithm
