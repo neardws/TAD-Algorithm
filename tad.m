@@ -42,7 +42,7 @@
 % FixedFogTrans = randi([20,40],FixedFogNum,1);
 % 
 % 
-% VehicleTask = randi([3,3],VehicleNum,1);
+% VehicleTask = randi([1,1],VehicleNum,1);
 % 
 % % Task
 % TaskNum = sum(VehicleTask(:));
@@ -60,14 +60,14 @@
 %         end
 %     end
 % end
+
+c = randperm(numel(MobileFogIdSet));
+% abandonedID = [];
+abandonedID = MobileFogIdSet(c(1:10));
+MobileFogID = setdiff(MobileFogIdSet, abandonedID);
+MobileFogIdSet = setdiff(MobileFogIdSet, abandonedID);
 % 
-% c = randperm(numel(MobileFogIdSet));
-% % abandonedID = [];
-% abandonedID = MobileFogIdSet(c(1:10));
-% MobileFogID = setdiff(MobileFogIdSet, abandonedID);
-% MobileFogIdSet = setdiff(MobileFogIdSet, abandonedID);
-% 
-% MobileFogNum = 10;
+MobileFogNum = 0;
 
 MobileFogCompu = randi([5,10],MobileFogNum,1)*FogEtimes;
 MobileFogTrans = randi([10,20],MobileFogNum,1);
