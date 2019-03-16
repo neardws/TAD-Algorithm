@@ -32,7 +32,7 @@
 % TaskEtimes = 1e8;
 % 
 % % Fog
-% FogEtimes = 1e-12;
+% FogEtimes = 1e-13;
 % 
 % FixedFogNum = 4;
 % FixedFogLocal = [500 500; 500 1000; 1000 500; 1000 1000];
@@ -40,34 +40,32 @@
 % FixedFogCompu = randi([100,200],FixedFogNum,1)*FogEtimes;
 % FixedFogSize = randi([250,500],FixedFogNum,1);
 % FixedFogTrans = randi([20,40],FixedFogNum,1);
-% 
-% 
-% VehicleTask = randi([5,5],VehicleNum,1);
-% 
-% % Task
-% TaskNum = sum(VehicleTask(:));
-% TaskVehicle = zeros(TaskNum,VehicleNum);
+% c = randperm(numel(MobileFogIdSet));
+% AddID = MobileFogIdSet(c(1:10));
+% MobileFogID = union(MobileFogID, AddID);
+% MobileFogIdSet = setdiff(MobileFogIdSet, AddID);
+%  
+% MobileFogNum = 40;
+% save('matlab40.mat');
+VehicleTask = randi([3,3],VehicleNum,1);
+
+% Task
+TaskNum = sum(VehicleTask(:));
+TaskVehicle = zeros(TaskNum,VehicleNum);
 % TaskSize = randi([10,25],TaskNum,1);
 % TaskCpu = randi([10,25],TaskNum,1)*TaskEtimes;
 % TaskEndTime = randi([100,300],TaskNum,1);
-% 
-% % Task & Vehicle
-% for i = 1 : TaskNum
-%     for n = 1 : VehicleNum
-%         if i <= sum(VehicleTask(1:n,:),1)
-%             TaskVehicle(i,n)=1;
-%             break;
-%         end
-%     end
-% end
 
-% % c = randperm(numel(MobileFogIdSet));
-% % abandonedID = [];
-% % % abandonedID = MobileFogIdSet(c(1:10));
-% % MobileFogID = setdiff(MobileFogIdSet, abandonedID);
-% % MobileFogIdSet = setdiff(MobileFogIdSet, abandonedID);
-% % % 
-% % MobileFogNum = 90;
+
+% Task & Vehicle
+for i = 1 : TaskNum
+    for n = 1 : VehicleNum
+        if i <= sum(VehicleTask(1:n,:),1)
+            TaskVehicle(i,n)=1;
+            break;
+        end
+    end
+end
 
 MobileFogCompu = randi([5,10],MobileFogNum,1)*FogEtimes;
 MobileFogTrans = randi([10,20],MobileFogNum,1);
@@ -268,7 +266,9 @@ while isTaskDone(TaskFinish)
         writeMatrix(fileName,TaskFog');
         writeMatrix(fileName,TaskFogProfit');
         writeMatrix(fileName,TaskFogMiniTime');
+        save('init.mat');
     end
+    
     
     % once arragement
     
@@ -400,8 +400,13 @@ while isTaskDone(TaskFinish)
             startTime = startTime + 1;
             endTime(arragementTime) = 0;
         else
-            startTime = startTime + round(max(taskTimeSumInFog));
-            endTime(arragementTime) =  max(taskTimeSumInFog);
+            if round(max(taskTimeSumInFog)) == 0
+                startTime = startTime + 1;
+                endTime(arragementTime) =  max(taskTimeSumInFog);
+            else
+                startTime = startTime + round(max(taskTimeSumInFog));
+                endTime(arragementTime) =  max(taskTimeSumInFog);
+            end
         end
         disp('lastComplete ~= complete');
     end
@@ -415,7 +420,7 @@ complete = sum(TaskFinish) / TaskNum;
 disp('Final complete rate is');
 disp(complete);
 
-
+save('result.mat');
 
 
 
