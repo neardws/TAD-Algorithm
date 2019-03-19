@@ -69,6 +69,8 @@
 % % % 
 % % MobileFogNum = 90;
 
+TaskEtimes = 1e8;
+
 MobileFogCompu = randi([5,10],MobileFogNum,1)*FogEtimes;
 MobileFogTrans = randi([10,20],MobileFogNum,1);
 MobileFogSize = randi([100,250],MobileFogNum,1);

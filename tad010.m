@@ -55,6 +55,7 @@ TaskVehicle = zeros(TaskNum,VehicleNum);
 % TaskSize = randi([10,25],TaskNum,1);
 % TaskCpu = randi([10,25],TaskNum,1)*TaskEtimes;
 % TaskEndTime = randi([100,300],TaskNum,1);
+TaskCpu = TaskCpu * 7.5;
 
 
 % Task & Vehicle
