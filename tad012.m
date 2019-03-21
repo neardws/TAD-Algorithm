@@ -47,7 +47,7 @@
 %  
 % MobileFogNum = 40;
 % save('matlab40.mat');
-VehicleTask = randi([3,3],VehicleNum,1);
+VehicleTask = randi([1,1],VehicleNum,1);
 
 % Task
 TaskNum = sum(VehicleTask(:));
@@ -55,7 +55,7 @@ TaskVehicle = zeros(TaskNum,VehicleNum);
 % TaskSize = randi([10,25],TaskNum,1);
 % TaskCpu = randi([10,25],TaskNum,1)*TaskEtimes;
 % TaskEndTime = randi([100,300],TaskNum,1);
-% TaskCpu = TaskCpu * 7.5;
+%TaskCpu = TaskCpu * 7.5;
 
 
 % Task & Vehicle
@@ -104,8 +104,8 @@ taskFogFinishTime = zeros(TaskNum, FogNum);
     TAD-Algorithm
 %}
 
-
 Aprofits = 0;
+profits = 0;
 while isTaskDone(TaskFinish)
     %{ 
         NowTime Update Every Arragement
@@ -254,20 +254,20 @@ while isTaskDone(TaskFinish)
         Write File
     %}
     if arragementTime == 1
-        fileName = 'datas.txt';
-        writeNum(fileName,TaskNum);
-        writeNum(fileName,FogNum);
-        writeNum(fileName,MaxTaskSumInFog);
-        writeMatrix(fileName,TaskSize);
-        writeMatrix(fileName,TaskCpu);
-        writeMatrix(fileName,FogSize);
-        writeMatrix(fileName,FogCompu);
-        writeMatrix(fileName,FogTrans);
-        writeMatrix(fileName,TaskSumInFog);
-        writeMatrix(fileName,TaskFog');
-        writeMatrix(fileName,TaskFogProfit');
-        writeMatrix(fileName,TaskFogMiniTime');
-        save('init.mat');
+%         fileName = 'datas.txt';
+%         writeNum(fileName,TaskNum);
+%         writeNum(fileName,FogNum);
+%         writeNum(fileName,MaxTaskSumInFog);
+%         writeMatrix(fileName,TaskSize);
+%         writeMatrix(fileName,TaskCpu);
+%         writeMatrix(fileName,FogSize);
+%         writeMatrix(fileName,FogCompu);
+%         writeMatrix(fileName,FogTrans);
+%         writeMatrix(fileName,TaskSumInFog);
+%         writeMatrix(fileName,TaskFog');
+%         writeMatrix(fileName,TaskFogProfit');
+%         writeMatrix(fileName,TaskFogMiniTime');
+%         save('init.mat');
     end
     
     
@@ -295,59 +295,52 @@ while isTaskDone(TaskFinish)
         theFogSize = FogSize(i);
         theTaskInFog = [];
         [sortedTask, marked] = sort(theTaskFogMiniTime);
-        choosedIdSet = cell(TaskNum,stopTime-startTime,theFogSize);
-        profits = zeros(TaskNum,timeMax-startTime-1,theFogSize); 
+        TaskID = [];
+        sortedTaskSize = [];
+        choosedIdSet = [];
+        t = startTime;
         for b = 1 : TaskNum
             if sortedTask(b,1) ~= 0
                 theTaskInFog = [theTaskInFog,marked(b,:)];
             end
         end
+        TaskSizeSet = [];
         for b = 1 : numel(theTaskInFog)
-            for t = startTime : stopTime
-                for s = 1 : theFogSize
-                    taskId = theTaskInFog(b);
-                    if s < TaskSize(taskId)+1
-                        if b == 1
-                            profits(b,t,s) = 0;
-                            choosedIdSet{b,t,s}=[];
-                        else
-                            profits(b,t,s) = profits(b-1,t,s);
-                            choosedIdSet(b,t,s) = choosedIdSet(b-1,t,s);
-                        end
-                    else
-                        timeTrans = round(TaskSize(taskId) / FogTrans(i));
-                        timeProcess = round(TaskCpu(taskId) * FogCompu(i));
-                        if numel(choosedIdSet(b,t,s)) == 0
-                            if t >= startTime+timeTrans+timeProcess && t <= theTaskFogMiniTime(taskId)
-                                profits(b,t,s) = TaskFogProfit(taskId,i);
-                                choosedIdSet(b,t,s) = [choosedIdSet{b-1,t,s},taskId];
-                                taskFogFinishTime(taskId, i) = t;
-                            end
-                        else
-                            if t >= startTime + timeProcess && t <= theTaskFogMiniTime(taskId)
-                                if b > 1
-                                    if profits(b-1,t-timeProcess,s-TaskSize(taskId)) + TaskFogProfit(taskId,i) > profits(b,t,s)
-                                        profits(b,t,s) = profits(b-1,t-timeProcess,s-TaskSize(taskId)) + TaskFogProfit(taskId,i);
-                                        choosedIdSet{b,t,s} = [choosedIdSet{b,t,s},taskId];
-                                        taskFogFinishTime(taskId, i) = t;
-                                    end
-                                end
-                            end
-                        end
+            taskId = theTaskInFog(b);
+            TaskSizeSet = [TaskSizeSet,TaskSize(taskId)];
+        end
+        [sortedTaskSize, sortedMarked] = sort(TaskSizeSet);
+        for b = 1 : numel(theTaskInFog)
+            taskId = theTaskInFog(sortedMarked(b));
+            size = TaskSize(taskId);
+            if size <= theFogSize
+                timeTrans = round(TaskSize(taskId) / FogTrans(i));
+                timeProcess = round(TaskCpu(taskId) * FogCompu(i));
+                if b == 1
+                    if t + timeTrans + timeProcess <= theTaskFogMiniTime(taskId)
+                        profits = profits + TaskFogProfit(taskId,i);
+                        choosedIdSet = [choosedIdSet, taskId];
+                        t = t + timeTrans + timeProcess;
+                        taskFogFinishTime(taskId, i) = t;
+                        theFogSize = theFogSize - size;
                     end
-                    
+                else
+                    if t + timeProcess <= theTaskFogMiniTime(taskId)
+                        profits = profits + TaskFogProfit(taskId,i);
+                        choosedIdSet = [choosedIdSet, taskId];
+                        t = t + timeProcess;
+                        taskFogFinishTime(taskId, i) = t;
+                        theFogSize = theFogSize - size;
+                    end
                 end
             end
+            if theFogSize <= 0
+                break;
+            end
+            if t >= stopTime
+                break;
+            end
         end
-%         disp('profits is');
-        if s > theFogSize
-%             disp(profits(b,t,theFogSize));
-        	profitsSum(arragementTime) = profitsSum(arragementTime) + profits(b,t,theFogSize);
-        else
-%             disp(profits(b,t,s));
-        	profitsSum(arragementTime) = profitsSum(arragementTime) + profits(b,t,s);
-        end
-        
     end
     
     % vehicle choose the mini time
@@ -421,7 +414,7 @@ complete = sum(TaskFinish) / TaskNum;
 disp('Final complete rate is');
 disp(complete);
 
-save('result.mat');
+save('resultCompare.mat');
 
 
 
