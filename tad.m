@@ -108,7 +108,7 @@ taskFogFinishTime = zeros(TaskNum, FogNum);
 %}
 
 
-
+Aprofits = 0;
 while isTaskDone(TaskFinish)
     %{ 
         NowTime Update Every Arragement
@@ -359,7 +359,8 @@ while isTaskDone(TaskFinish)
         for j = 1 : FogNum
             if sortedFinishTime(1,j) ~= 0
                 TaskFinish(i) = 1;
-                TaskChoosed(i,j) = 1;
+                TaskChoosed(i,fogMarked(j)) = 1;
+                Aprofits = Aprofits + TaskFogProfit(i,fogMarked(j));
                 break;
             end
         end
