@@ -47,7 +47,7 @@
 %  
 % MobileFogNum = 40;
 % save('matlab40.mat');
-VehicleTask = randi([1,1],VehicleNum,1);
+VehicleTask = randi([5,5],VehicleNum,1);
 
 % Task
 TaskNum = sum(VehicleTask(:));
@@ -307,9 +307,9 @@ while isTaskDone(TaskFinish)
         TaskSizeSet = [];
         for b = 1 : numel(theTaskInFog)
             taskId = theTaskInFog(b);
-            TaskSizeSet = [TaskSizeSet,TaskSize(taskId)];
+            TaskSizeSet = [TaskSizeSet,TaskEndTime(taskId)];
         end
-        [sortedTaskSize, sortedMarked] = sort(TaskSizeSet);
+        [sortedTaskSize, sortedMarked] = sort(TaskSizeSet,'descend');
         for b = 1 : numel(theTaskInFog)
             taskId = theTaskInFog(sortedMarked(b));
             size = TaskSize(taskId);
@@ -350,8 +350,8 @@ while isTaskDone(TaskFinish)
         for j = 1 : FogNum
             if sortedFinishTime(1,j) ~= 0
                 TaskFinish(i) = 1;
-                TaskChoosed(i,j) = 1;
-                Aprofits = Aprofits + TaskFogProfit(i,j);
+                TaskChoosed(i,fogMarked(j)) = 1;
+                Aprofits = Aprofits + TaskFogProfit(i,fogMarked(j));
                 break;
             end
         end

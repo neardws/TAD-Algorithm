@@ -47,7 +47,7 @@
 %  
 % MobileFogNum = 40;
 % save('matlab40.mat');
-VehicleTask = randi([3,3],VehicleNum,1);
+VehicleTask = randi([1,1],VehicleNum,1);
 
 % Task
 TaskNum = sum(VehicleTask(:));
@@ -254,20 +254,20 @@ while isTaskDone(TaskFinish)
         Write File
     %}
     if arragementTime == 1
-        fileName = 'datas.txt';
-        writeNum(fileName,TaskNum);
-        writeNum(fileName,FogNum);
-        writeNum(fileName,MaxTaskSumInFog);
-        writeMatrix(fileName,TaskSize);
-        writeMatrix(fileName,TaskCpu);
-        writeMatrix(fileName,FogSize);
-        writeMatrix(fileName,FogCompu);
-        writeMatrix(fileName,FogTrans);
-        writeMatrix(fileName,TaskSumInFog);
-        writeMatrix(fileName,TaskFog');
-        writeMatrix(fileName,TaskFogProfit');
-        writeMatrix(fileName,TaskFogMiniTime');
-        save('init.mat');
+%         fileName = 'datas.txt';
+%         writeNum(fileName,TaskNum);
+%         writeNum(fileName,FogNum);
+%         writeNum(fileName,MaxTaskSumInFog);
+%         writeMatrix(fileName,TaskSize);
+%         writeMatrix(fileName,TaskCpu);
+%         writeMatrix(fileName,FogSize);
+%         writeMatrix(fileName,FogCompu);
+%         writeMatrix(fileName,FogTrans);
+%         writeMatrix(fileName,TaskSumInFog);
+%         writeMatrix(fileName,TaskFog');
+%         writeMatrix(fileName,TaskFogProfit');
+%         writeMatrix(fileName,TaskFogMiniTime');
+%         save('init.mat');
     end
     
     
@@ -357,8 +357,8 @@ while isTaskDone(TaskFinish)
         for j = 1 : FogNum
             if sortedFinishTime(1,j) ~= 0
                 TaskFinish(i) = 1;
-                TaskChoosed(i,j) = 1;
-                Aprofits = Aprofits + TaskFogProfit(i,j);
+                TaskChoosed(i,fogMarked(j)) = 1;
+                Aprofits = Aprofits + TaskFogProfit(i,fogMarked(j));
                 break;
             end
         end
